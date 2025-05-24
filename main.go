@@ -34,24 +34,26 @@ func main() {
 		Port: *port,
 	}
 
-	var actualHost string
+	var actualHost string = targetHost.Host
 	var err error
 
-	switch {
-	case strings.Contains(strings.ToLower(targetHost.Host), "ced"):
-		log.Println("Checking for available hosts in CED...")
-		actualHost, err = GetCEDHost(jumpHost) // CED IDを取得する関数を呼び出す
-	case strings.Contains(strings.ToLower(targetHost.Host), "ied"):
-		log.Println("Checking for available hosts in IED...")
-		actualHost, err = GetIEDHost(jumpHost) // PC IDを取得する関数を呼び出す
-	case strings.Contains(strings.ToLower(targetHost.Host), "sol"):
-		actualHost = "sol.edu.cc.uec.ac.jp"
-	case strings.Contains(strings.ToLower(targetHost.Host), "ssh"):
-		actualHost = "ssh.cc.uec.ac.jp"
-	}
-	if err != nil {
-		log.Printf("Error checking available hosts: %v\n", err)
-		os.Exit(1)
+	if !strings.HasSuffix(targetHost.Host, ".uec.ac.jp") {
+		switch {
+		case strings.Contains(strings.ToLower(targetHost.Host), "ced"):
+			log.Println("Checking for available hosts in CED...")
+			actualHost, err = GetCEDHost(jumpHost) // CED IDを取得する関数を呼び出す
+		case strings.Contains(strings.ToLower(targetHost.Host), "ied"):
+			log.Println("Checking for available hosts in IED...")
+			actualHost, err = GetIEDHost(jumpHost) // PC IDを取得する関数を呼び出す
+		case strings.Contains(strings.ToLower(targetHost.Host), "sol"):
+			actualHost = "sol.edu.cc.uec.ac.jp"
+		case strings.Contains(strings.ToLower(targetHost.Host), "ssh"):
+			actualHost = "ssh.cc.uec.ac.jp"
+		}
+		if err != nil {
+			log.Printf("Error checking available hosts: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	if socksProxy != nil {
