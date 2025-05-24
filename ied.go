@@ -40,7 +40,7 @@ func GetIEDHost(jumpHost SSHHost) (string, error) {
 		status, err := execHttpRequestWithFallback(jumpHost, *req)
 
 		if err != nil {
-			log.Printf("Error checking PC ID %s: %v", pcid, err)
+			verboseLogger.Printf("Error checking PC ID %s: %v", pcid, err)
 			continue
 		}
 		if strings.Contains(status, "usable") {

@@ -48,8 +48,6 @@ func ConnectSSHWithCommand(jumpHost SSHHost, targetHost SSHHost) error {
 
 	cmd := exec.Command("ssh", sshArgs...)
 
-	log.Printf("Connecting to %s...\n", targetHost.Host)
-
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

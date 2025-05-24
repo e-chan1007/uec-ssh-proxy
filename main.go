@@ -3,10 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
 	"time"
+)
+
+var (
+	verboseLogger = log.New(os.Stderr, "[UEC-SSH-PROXY] ", log.Lmsgprefix)
 )
 
 func main() {
@@ -16,11 +21,16 @@ func main() {
 	host := flag.String("host", "", "Host to connect to")
 	user := flag.String("user", "", "User to connect as")
 	port := flag.String("port", "22", "Port to connect to (default: 22)")
+	verbose := flag.Bool("verbose", false, "Enable verbose output")
 
 	flag.Parse()
 	if *host == "" || *user == "" {
 		flag.Usage()
 		os.Exit(1)
+	}
+
+	if !*verbose {
+		verboseLogger.SetOutput(io.Discard)
 	}
 
 	jumpHost := SSHHost{
@@ -40,10 +50,10 @@ func main() {
 	if !strings.HasSuffix(targetHost.Host, ".uec.ac.jp") {
 		switch {
 		case strings.Contains(strings.ToLower(targetHost.Host), "ced"):
-			log.Println("Checking for available hosts in CED...")
+			verboseLogger.Println("Checking for available hosts in CED...")
 			actualHost, err = GetCEDHost(jumpHost) // CED IDを取得する関数を呼び出す
 		case strings.Contains(strings.ToLower(targetHost.Host), "ied"):
-			log.Println("Checking for available hosts in IED...")
+			verboseLogger.Println("Checking for available hosts in IED...")
 			actualHost, err = GetIEDHost(jumpHost) // PC IDを取得する関数を呼び出す
 		case strings.Contains(strings.ToLower(targetHost.Host), "sol"):
 			actualHost = "sol.edu.cc.uec.ac.jp"
@@ -51,8 +61,11 @@ func main() {
 			actualHost = "ssh.cc.uec.ac.jp"
 		}
 		if err != nil {
-			log.Printf("Error checking available hosts: %v\n", err)
+			verboseLogger.Printf("Error checking available hosts: %v\n", err)
 			os.Exit(1)
+		}
+		if actualHost != targetHost.Host {
+			log.Printf("Connecting to host %s\n", actualHost)
 		}
 	}
 
@@ -69,17 +82,17 @@ func main() {
 	}
 
 	if requireSSHProxy {
-		log.Printf("Connecting to %s via %s...\n", targetHost.Host, jumpHost.Host)
+		verboseLogger.Printf("Connecting to %s via %s...\n", targetHost.Host, jumpHost.Host)
 		err := ConnectSSHWithCommand(jumpHost, targetHost)
 		if err != nil {
 			log.Printf("Error connecting to host: %v\n", err)
 			os.Exit(1)
 		}
 	} else {
-		log.Printf("Connecting directly to %s...\n", targetHost.Host)
+		verboseLogger.Printf("Connecting directly to %s...\n", targetHost.Host)
 		err := ConnectSSHDirectly(targetHost)
 		if err != nil {
-			log.Printf("Error connecting to host: %v\n", err)
+			verboseLogger.Printf("Error connecting to host: %v\n", err)
 			os.Exit(1)
 		}
 	}
