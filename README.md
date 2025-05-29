@@ -5,7 +5,8 @@ SSH の ProxyCommand として利用すると、sol/CED/IED などの学内サ�
 
 ## インストール
 
-実行ファイルをダウンロードして、適当な場所に配置してください。
+実行ファイルを[ダウンロード](https://github.com/e-chan1007/uec-ssh-proxy/releases/latest)して、適当な場所に配置してください。
+OSやウイルス対策ソフトウェアセキュリティ機能によって実行がブロックされる場合は、ご利用のソフトウェアのサポートページ等をご確認いただくか、ご自身の環境でのコンパイルをお試しください。
 
 SSH の設定ファイル(Windows: `%USERPROFILE%\.ssh\config`(`C:\Users\ユーザー\.ssh\config`), macOS/Linux: `~/.ssh/config`)に以下のように設定を追加してください。
 
@@ -61,10 +62,7 @@ Host uec-*
 ### ホストを明示的に設定する場合
 
 ```ssh
-Host uec-sol
-Host uec-ced
-Host uec-ied
-Host uec-*
+Host uec-sol uec-ced uec-ied
   User あなたのUECアカウント
   ProxyCommand /path/to/uec-ssh-proxy -host %h -user %r -port %p
 ```
@@ -76,28 +74,13 @@ Host uec-*
 `id_rsa`や`id_ed25519`などのデフォルトのファイル名の認証鍵ではなく、カスタムの認証鍵を使用する場合は、SSH の設定ファイルに以下のように追加してください。
 
 ```ssh
-Host uec-*
-  User あなたのUECアカウント
-  IdentityFile ~/.ssh/id_ed25519_custom
-  ProxyCommand /path/to/uec-ssh-proxy -host %h -user %r -port %p
-
-Host ssh.cc.uec.ac.jp
-  User あなたのUECアカウント
-  IdentityFile ~/.ssh/id_ed25519_custom
-```
-
-特に、ホスト `ssh.cc.uec.ac.jp` に対して鍵の指定がない場合にはすべての接続に失敗します。
-
-あるいは、
-
-```
-Host *uec*
+Host uec-* ssh.cc.uec.ac.jp
   User あなたのUECアカウント
   IdentityFile ~/.ssh/id_ed25519_custom
   ProxyCommand /path/to/uec-ssh-proxy -host %h -user %r -port %p
 ```
 
-のようにすることで、設定を 1 つにまとめることもできます。
+特に、ホスト `ssh.cc.uec.ac.jp` に対して鍵の指定がない場合には**すべての接続に失敗**します。
 
 ### 別のホスト名パターンを使用する場合
 
@@ -112,27 +95,17 @@ Host *-uec
 技術的には、`sol`/`ced`/`ied`/`ssh`が含まれて`.uec.ac.jp`で終わらない任意のホスト名についてホスト名の書き換え処理を行っているため、
 パターンの変更により、ホスト名の接続先を変更できます。
 
-このことから、以下のようにホスト名を明示的に指定することもできます。
+このことから、以下のように特定のパターンを含まずにホスト名を明示的に指定することもできます。
 
 ```ssh
-Host sol
-  User あなたのUECアカウント
-  ProxyCommand /path/to/uec-ssh-proxy -host %h -user %r -port %p
-
-Host ied
-  User あなたのUECアカウント
-  ProxyCommand /path/to/uec-ssh-proxy -host %h -user %r -port %p
-
-Host ced
-  User あなたのUECアカウント
-  ProxyCommand /path/to/uec-ssh-proxy -host %h -user %r -port %p
-
-Host ssh
+Host sol ied ced
   User あなたのUECアカウント
   ProxyCommand /path/to/uec-ssh-proxy -host %h -user %r -port %p
 ```
 
 # 開発
+
+Go言語の開発環境が必要です。
 
 ```sh
 $ go mod download
